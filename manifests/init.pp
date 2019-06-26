@@ -35,12 +35,12 @@ class remi (
   $proxy_password                        = absent,
   $proxy_username                        = absent,
 
-  $base_key_path                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi',
-  $2017_key_path                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi2017',
-  $2018_key_path                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi2018',
-  $2019_key_path                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi2019',
+  $key_path_base                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi',
+  $key_path_2017                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi2017',
+  $key_path_2018                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi2018',
+  $key_path_2019                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi2019',
 
-  $path                                  = $base_key_path,
+  $path                                  = $key_path_base,
 
   $remi_baseurl                          = absent,
   $remi_mirrorlist                       = "http://cdn.remirepo.net/enterprise/${::operatingsystemmajrelease}/remi/mirror",
@@ -204,16 +204,16 @@ class remi (
   }
 
   if ($::osfamily == 'RedHat' and $::operatingsystem !~ /Fedora|Amazon/) {
-    remi::rpm_gpg_key { $base_key_path:
+    remi::rpm_gpg_key { $key_path_base:
       source => 'puppet:///modules/remi/RPM-GPG-KEY-remi',
     }
-    remi::rpm_gpg_key { $2017_key_path:
+    remi::rpm_gpg_key { $key_path_2017:
       source => 'puppet:///modules/remi/RPM-GPG-KEY-remi2017',
     }
-    remi::rpm_gpg_key { $2018_key_path:
+    remi::rpm_gpg_key { $key_path_2018:
       source => 'puppet:///modules/remi/RPM-GPG-KEY-remi2018',
     }
-    remi::rpm_gpg_key { $2019_key_path:
+    remi::rpm_gpg_key { $key_path_2019:
       source => 'puppet:///modules/remi/RPM-GPG-KEY-remi2019',
     }
 
