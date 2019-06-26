@@ -10,7 +10,14 @@
 # Whether Remi's repositories and the RPM-GPG-KEY-remi file should exist.
 #
 # * `path`
-# The path to the RPM-GPG-KEY-remi file to manage. Must be an absolute path.
+# The path to the default RPM-GPG-KEY-remi file to manage.  Must be an absolute path.
+# Four keys get installed:
+#  /etc/pki/rpm-gpg/RPM-GPG-KEY-remi
+#  /etc/pki/rpm-gpg/RPM-GPG-KEY-remi2017
+#  /etc/pki/rpm-gpg/RPM-GPG-KEY-remi2018
+#  /etc/pki/rpm-gpg/RPM-GPG-KEY-remi2019
+# These paths can also be overridden with $base_key_path, $2017_key_path, $2018_key_path,
+# and $2019_key_path, respectively.
 #
 # Examples
 # --------
@@ -23,11 +30,17 @@
 #
 class remi (
   $ensure                                = present,
-  $path                                  = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi',
   $use_epel                              = true,
   $proxy                                 = absent,
   $proxy_password                        = absent,
   $proxy_username                        = absent,
+
+  $base_key_path                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi',
+  $2017_key_path                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi2017',
+  $2018_key_path                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi2018',
+  $2019_key_path                         = '/etc/pki/rpm-gpg/RPM-GPG-KEY-remi2019',
+
+  $path                                  = $base_key_path,
 
   $remi_baseurl                          = absent,
   $remi_mirrorlist                       = "http://cdn.remirepo.net/enterprise/${::operatingsystemmajrelease}/remi/mirror",
@@ -191,16 +204,24 @@ class remi (
   }
 
   if ($::osfamily == 'RedHat' and $::operatingsystem !~ /Fedora|Amazon/) {
-    class { 'remi::rpm_gpg_key':
-      ensure => $ensure,
-      path   => $path,
+    remi::rpm_gpg_key { $base_key_path:
+      source => 'puppet:///modules/remi/RPM-GPG-KEY-remi',
+    }
+    remi::rpm_gpg_key { $2017_key_path:
+      source => 'puppet:///modules/remi/RPM-GPG-KEY-remi2017',
+    }
+    remi::rpm_gpg_key { $2018_key_path:
+      source => 'puppet:///modules/remi/RPM-GPG-KEY-remi2018',
+    }
+    remi::rpm_gpg_key { $2019_key_path:
+      source => 'puppet:///modules/remi/RPM-GPG-KEY-remi2019',
     }
 
     yumrepo {
       default:
         gpgcheck       => 1,
-        gpgkey         => 'file:///etc/pki/rpm-gpg/RPM-GPG-KEY-remi',
-        require        => Class['remi::rpm_gpg_key'],
+        gpgkey         => "file://${path}",
+        require        => Remi::Rpm_gpg_key[$path],
         proxy          => $proxy,
         proxy_password => $proxy_password,
         proxy_username => $proxy_username;
